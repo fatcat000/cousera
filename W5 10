@@ -1,0 +1,14 @@
+# cousera
+SELECT str.city,str.state,temp.store,temp.dept,temp.incrpc
+FROM strinfo str JOIN
+             (SELECT s.dept,t.store,SUM(CASE WHEN EXTRACT(MONTH from t.saledate)=11 THEN t.amt END) as sumn,
+              SUM(CASE WHEN EXTRACT(MONTH from t.saledate)=12 THEN t.amt END) as sumd,
+              COUNT(DISTINCT (CASE WHEN EXTRACT(MONTH from t.saledate)=11 THEN t.saledate END) )as csdn,
+              COUNT(DISTINCT (CASE WHEN EXTRACT(MONTH from t.saledate)=12 THEN t.saledate END) )as csdd, ((sumd/csdd)-(sumn/csdn))/(sumn/csdn)*100 as incrpc
+FROM trnsact t join skuinfo s
+  ON s.sku=t.sku
+where stype = 'p' and not (extract(month from saledate)=08 and extract(year from saledate)=2005)
+GROUP BY s.dept,t.store
+having csdn> 20 and csdd>20) as temp
+ON temp.store=str.store
+ORDER BY temp.incrpc desc;
